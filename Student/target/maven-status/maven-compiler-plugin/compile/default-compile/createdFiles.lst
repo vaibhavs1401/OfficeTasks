@@ -1,0 +1,14 @@
+com\cdac\student\entity\Admin.class
+com\cdac\student\config\DataConfig.class
+com\cdac\student\controller\AdminController.class
+com\cdac\student\entity\Student.class
+com\cdac\student\dao\StudentDaoImpl.class
+com\cdac\student\service\StudentServiceImpl.class
+com\cdac\student\controller\AuthController.class
+com\cdac\student\service\StudentService.class
+com\cdac\student\entity\BaseEntity.class
+com\cdac\student\controller\StudentController.class
+com\cdac\student\dao\StudentDao.class
+com\cdac\student\entity\BaseEntity$UserRole.class
+com\cdac\student\JakartaRestConfiguration.class
+com\cdac\student\resources\JakartaEE10Resource.class
