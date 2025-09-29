@@ -14,11 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- *
- * @author hcdc
- */
-@RequestMapping(value = "/")
+
+
+@RequestMapping(value = "/admin")
 @Controller
 public class AdminController {
     @Autowired
@@ -36,4 +34,20 @@ public class AdminController {
         model.addAttribute("list", ls);
         return "studentList";
     }
+    
+    @GetMapping(value = "/studentlist")
+    public String getStudentList(@RequestParam("class") String studentClass, Model model){
+        List<Student> ls = studentService.getStudentClassWise(studentClass);
+        model.addAttribute("list", ls);
+        return "studentListClassWise";
+    }
+    
+    
+    
+    
+    
 }
+
+
+
+

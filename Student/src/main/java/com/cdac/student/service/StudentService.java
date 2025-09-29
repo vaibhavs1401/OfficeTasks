@@ -18,6 +18,8 @@ public interface StudentService {
     public Student getStudentByRollNo(String rollNo);
 
     public List<Student> getAllStudents();
+
+    public List<Student> getStudentClassWise(String studentClass);
     
     
 }

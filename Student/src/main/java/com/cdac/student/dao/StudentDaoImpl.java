@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.cdac.student.dao;
 
 import com.cdac.student.entity.Student;
@@ -12,32 +8,49 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.util.List;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author hcdc
- */
-public abstract class StudentDaoImpl implements StudentDao{
-    
-    
+@Repository
+@Transactional
+public abstract class StudentDaoImpl implements StudentDao {
+
     @PersistenceContext
     private EntityManager entityManager;
-    
-    public Student findByEmail(String email){
+
+    @Override
+    public Student findByRollNo(String rollNo) {
+        // Implement as needed or leave for JpaRepository default if exists
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public Student findByEmail(String email) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Student> cq = cb.createQuery(Student.class);
         Root<Student> root = cq.from(Student.class);
         Predicate emailPredicate = cb.equal(root.get("email"), email);
         cq.where(emailPredicate);
         try {
-        return entityManager.createQuery(cq).getSingleResult();
+            return entityManager.createQuery(cq).getSingleResult();
         } catch (NoResultException e) {
-        return null;
+            return null;
+        }
     }
-}
 
-    
-    
-    
-    
+    public List<Student> getStudentsByClass(String studentClass) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<Student> findByClassUsingCriteria(String studentClass) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Student> cq = cb.createQuery(Student.class);
+        Root<Student> root = cq.from(Student.class);
+
+        Predicate classPredicate = cb.equal(root.get("studentClass"), studentClass);
+        cq.where(classPredicate);
+
+        return entityManager.createQuery(cq).getResultList();
+    }
 }

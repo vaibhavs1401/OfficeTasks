@@ -9,8 +9,6 @@ package com.cdac.student.controller;
  * @author hcdc
  */
 
-
-
 public class StudentController {
     
 }

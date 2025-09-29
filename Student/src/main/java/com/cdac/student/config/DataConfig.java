@@ -4,6 +4,7 @@
  */
 package com.cdac.student.config;
 
+import jakarta.persistence.EntityManagerFactory;
 import java.util.Properties;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
@@ -31,12 +32,13 @@ public class DataConfig {
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource ds = new DriverManagerDataSource();
-        ds.setDriverClassName("or.mariadb.jdbc.Driver");
+        ds.setDriverClassName("org.mariadb.jdbc.Driver");
         ds.setUrl("jdbc:mariadb://localhost:3306/user");
-        ds.setUsername("hcdc");
-        ds.setPassword("hcdc12345");
+        ds.setUsername("root");
+        ds.setPassword("hcdc@2018");
         return ds;
     }
+    
     
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(){
@@ -52,9 +54,14 @@ public class DataConfig {
         jpaProperties.put("hibernate.hbm2ddl.auto", "update");  
         jpaProperties.put("hibernate.format_sql", "true");
         emf.setJpaProperties(jpaProperties);
-        
         return emf;
     }
+    
+//    @Bean
+//    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+//    return new JpaTransactionManager(emf);
+//    }
+
     
     
     @Bean
