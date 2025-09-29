@@ -1,64 +1,54 @@
-
 package com.cdac.student.service;
 
-import com.cdac.student.dao.StudentDaoImpl;
+import com.cdac.student.dao.StudentDao;
 import com.cdac.student.entity.Student;
-import java.util.List;
+import com.cdac.student.entity.BaseEntity.UserRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author hcdc
- */
-
-
+import java.util.List;
 
 @Service
 @Transactional
-public class StudentServiceImpl implements StudentService{
+public class StudentServiceImpl implements StudentService {
 
-    private StudentDaoImpl studentDao; 
+    private final StudentDao studentDao;
+
+    public StudentServiceImpl(StudentDao studentDao) {
+        this.studentDao = studentDao;
+    }
+
     @Override
     public String register(Student s) {
-        Student s1 = studentDao.findByEmail(s.getEmail());
-        if(s1 != null){
+        if (studentDao.existsByEmail(s.getEmail())) {
             return "EmailAlreadyExists";
         }
-        else{
-        Student s2 = new Student();
-        s2.setAge(s.getAge());
-        s2.setEmail(s.getEmail());
-        s2.setName(s.getName());
-        s2.setPassword(s.getPassword());
+        Student toSave = new Student();
+        toSave.setName(s.getName());
+        toSave.setEmail(s.getEmail());
+        toSave.setPassword(s.getPassword());     
+        toSave.setStd(s.getStd());
+        toSave.setAge(s.getAge());
+        toSave.setRollNo(s.getRollNo());
+        toSave.setUserRole(UserRole.ROLE_STUDENT); 
+        studentDao.save(toSave);
         return "Success";
-        }
-        
-    }
-    
-    
-
-    @Override
-    public Student getStudentByRollNo(String rollNo) {
-        Student s3 = studentDao.findByRollNo(rollNo);
-        return s3;
     }
 
     @Override
-    public List<Student> getAllStudents() {
-      List ls = studentDao.findAll();
-      return ls;
+    @Transactional(readOnly = true)
+    public Student authenticate(String email, String password) {
+        Student user = studentDao.findByEmail(email);
+        if (user == null) return null;
+        return (password != null && password.equals(user.getPassword())) ? user : null;
     }
 
-    @Override
-    public List<Student> getStudentClassWise(String studentClass) {
-        
-        return studentDao.getStudentsByClass(studentClass);
-    }
-    
-    
-    
-    
+    @Override @Transactional(readOnly = true)
+    public Student getStudentByRollNo(String rollNo) { return studentDao.findByRollNo(rollNo); }
+
+    @Override @Transactional(readOnly = true)
+    public List<Student> getAllStudents() { return studentDao.findAll(); }
+
+    @Override @Transactional(readOnly = true)
+    public List<Student> getStudentClassWise(int std) { return studentDao.findByStd(std); }
 }
-    
-

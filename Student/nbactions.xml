@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-mvn -q dependency:tree | findstr /i "spring-core spring-webmvc jakarta.servlet javax.servlet jstl" </actionName>
+            <displayName>mvn -q dependency:tree | findstr /i "spring-core spring-webmvc jakarta.servlet javax.servlet jstl" </displayName>
+        </action>
+    </actions>

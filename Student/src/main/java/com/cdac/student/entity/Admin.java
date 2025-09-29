@@ -4,10 +4,13 @@
  */
 package com.cdac.student.entity;
 
+import jakarta.persistence.Entity;
+
 /**
  *
  * @author hcdc
  */
+@Entity(name="users")
 public class Admin extends BaseEntity{
 
     public Admin() {

@@ -1,53 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.cdac.student.entity;
 
-import jakarta.persistence.MappedSuperclass;
-
-/**
- *
- * @author hcdc
- */
+import jakarta.persistence.*;
 
 @MappedSuperclass
 public class BaseEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String email;
     private String password;
+
+    @Enumerated(EnumType.ORDINAL)            // tinyint(0/1) ⇄ enum ordinal
+    @Column(name = "userRole", nullable = true)
     private UserRole userRole;
-    
-    public enum UserRole {
-    ROLE_STUDENT, ROLE_ADMIN
-    }
 
-    public String getEmail() {
-        return email;
-    }
+    public enum UserRole { ROLE_STUDENT, ROLE_ADMIN }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public BaseEntity() {
-    }
-    
-    
-    
+    public BaseEntity() {}
 
     public BaseEntity(String email, String password) {
         this.email = email;
         this.password = password;
     }
-    
-    
-    
+
+    // getters/setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public UserRole getUserRole() { return userRole; }
+    public void setUserRole(UserRole userRole) { this.userRole = userRole; }
 }

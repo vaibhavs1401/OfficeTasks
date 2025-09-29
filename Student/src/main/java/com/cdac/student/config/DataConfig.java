@@ -1,79 +1,61 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.cdac.student.config;
 
 import jakarta.persistence.EntityManagerFactory;
-import java.util.Properties;
-import javax.sql.DataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.*;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/**
- *
- * @author hcdc
- */
-
+import javax.sql.DataSource;
+import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = "com.cdac.student.dao")
+@ComponentScan(basePackages = "com.cdac.student.service")
+@EnableJpaRepositories(basePackages = "com.cdac.student.dao") // your repositories
 public class DataConfig {
-    
+
     @Bean
-    public DataSource dataSource(){
-        DriverManagerDataSource ds = new DriverManagerDataSource();
+    public DataSource dataSource() {
+        var ds = new DriverManagerDataSource();
         ds.setDriverClassName("org.mariadb.jdbc.Driver");
-        ds.setUrl("jdbc:mariadb://localhost:3306/user");
+        // IMPORTANT: add auth/TLS flags if your server is MySQL-8 style auth
+        ds.setUrl("jdbc:mariadb://localhost:3307/user?allowPublicKeyRetrieval=true&useSSL=false");
         ds.setUsername("root");
-        ds.setPassword("hcdc@2018");
+        ds.setPassword("manager");
         return ds;
     }
-    
-    
+
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(){
-        LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
-        emf.setDataSource(dataSource());
-        emf.setPackagesToScan("com.cdac.student.entity");
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(true); 
-        vendorAdapter.setShowSql(true);    
-        emf.setJpaVendorAdapter(vendorAdapter);
-        Properties jpaProperties = new Properties();
-        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect");
-        jpaProperties.put("hibernate.hbm2ddl.auto", "update");  
-        jpaProperties.put("hibernate.format_sql", "true");
-        emf.setJpaProperties(jpaProperties);
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource ds) {
+        var emf = new LocalContainerEntityManagerFactoryBean();
+        emf.setDataSource(ds);
+        emf.setPackagesToScan("com.cdac.student.entity"); // your @Entity package
+
+        var vendor = new HibernateJpaVendorAdapter();
+        vendor.setDatabasePlatform("org.hibernate.dialect.MariaDBDialect");
+        vendor.setShowSql(true);
+        vendor.setGenerateDdl(true);
+        emf.setJpaVendorAdapter(vendor);
+
+        var props = new Properties();
+        props.put("hibernate.hbm2ddl.auto", "update");
+        props.put("hibernate.format_sql", "true");
+        emf.setJpaProperties(props);
         return emf;
     }
-    
-//    @Bean
-//    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-//    return new JpaTransactionManager(emf);
-//    }
 
-    
-    
     @Bean
-    public PlatformTransactionManager transactionManager(){
-        JpaTransactionManager tx = new JpaTransactionManager();
-        tx.setEntityManagerFactory(entityManagerFactory().getObject());
-        return tx;
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+        return new JpaTransactionManager(emf);
     }
-    
+
     @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation(){
+    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
-    
 }
