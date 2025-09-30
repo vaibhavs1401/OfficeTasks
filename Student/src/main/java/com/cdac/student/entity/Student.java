@@ -4,6 +4,7 @@
  */
 package com.cdac.student.entity;
 
+import io.jsonwebtoken.Claims;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
@@ -55,13 +56,14 @@ public class Student extends BaseEntity{
         this.rollNo = rollNo;
     }
 
-    public Student(String name, int std, int age, String rollNo, String email, String password) {
-        super(email, password);
+    public Student(String name, int std, int age, String rollNo, Long id, String email, String password) {
+        super(id, email, password);
         this.name = name;
         this.std = std;
         this.age = age;
         this.rollNo = rollNo;
     }
+    
 
     public Student() {
         

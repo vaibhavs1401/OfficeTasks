@@ -10,4 +10,11 @@ public interface StudentService {
     Student getStudentByRollNo(String rollNo);
     List<Student> getAllStudents();
     List<Student> getStudentClassWise(int std);
+    public Student findByRollNo(String rollNo);
+    public void updateStudent(Student student);
+    public void deleteStudentByRollNo(String rollNo);
+
+    public void addStudent(Student student);
+
+    public List<Student> findStudentsByStd(int std);
 }

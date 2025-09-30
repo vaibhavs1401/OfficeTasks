@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<jsp:include page="includes/header.jsp" />
 <html>
 <head><title>Student Details</title></head>
 <body>

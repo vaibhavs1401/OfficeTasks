@@ -19,7 +19,8 @@ public class BaseEntity {
 
     public BaseEntity() {}
 
-    public BaseEntity(String email, String password) {
+    public BaseEntity(Long id, String email, String password) {
+        this.id = id;
         this.email = email;
         this.password = password;
     }

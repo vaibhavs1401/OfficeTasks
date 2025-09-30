@@ -40,4 +40,14 @@ public class AdminController {
         model.addAttribute("list", ls);
         return "studentListClassWise";
     }
+    
+    
+    @GetMapping("/classwise")
+    public String getStudentsByClass(@RequestParam("std") int std, Model model){
+        List<Student> students = studentService.findStudentsByStd(std);
+        model.addAttribute("students", students);
+        model.addAttribute("classStd", std);
+        return "studentsByClass";
+    }
+    
 }

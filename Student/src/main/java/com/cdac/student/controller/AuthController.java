@@ -60,10 +60,13 @@ public class AuthController {
         return "redirect:/auth/login?registered";
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpServletRequest req) {
         var ses = req.getSession(false);
-        if (ses != null) ses.invalidate();
-        return "redirect:/login?logout";
+        if (ses != null) {
+            ses.invalidate();
+        }
+        return "logout";
     }
+    
 }
