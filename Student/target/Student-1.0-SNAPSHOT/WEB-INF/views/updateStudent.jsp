@@ -1,5 +1,5 @@
-<%@ page contentType="text/html" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <jsp:include page="includes/header.jsp" />
 
@@ -7,22 +7,25 @@
 <html>
 <head><title>Update Student</title></head>
 <body>
-<h2>Update Student Details</h2>
+  <div class="card">
+    <h2>Update Student Details</h2>
 
-<form:form modelAttribute="student" method="post" action="${pageContext.request.contextPath}/student/update">
-    <table>
-        <!-- Hidden ID field to bind the primary key -->
-        <form:hidden path="id" />
-        <tr><td>Roll No:</td><td><form:input path="rollNo" readonly="true"/></td></tr>
-        <tr><td>Name:</td><td><form:input path="name"/></td></tr>
-        <tr><td>Email:</td><td><form:input path="email"/></td></tr>
-        <tr><td>Age:</td><td><form:input path="age"/></td></tr>
-        <tr><td>Class (std):</td><td><form:input path="std"/></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Update"/></td></tr>
-    </table>
-</form:form>
+    <form:form modelAttribute="student" method="post" action="<c:url value='/student/update'/>" style="margin-top:12px;">
+      <form:hidden path="id" />
+      <div class="form-row"><label>Roll No</label><form:input path="rollNo" readonly="true"/></div>
+      <div class="form-row"><label>Name</label><form:input path="name"/></div>
+      <div class="form-row"><label>Age</label><form:input path="age" type="number"/></div>
+      <div class="form-row"><label>Class (standard)</label><form:input path="standard" type="number"/></div>
 
-<p><a href="${pageContext.request.contextPath}/admin/studentList">Back to List</a></p>
+      <!-- (Optional) allow re-linking account by id if your service supports -->
+      <div class="form-row"><label>User Account ID</label><form:input path="account.id" type="number"/></div>
 
+      <div class="actions">
+        <button type="submit" class="btn">Update</button>
+        <a class="btn ghost" href="<c:url value='/admin/studentlist'/>">Back to List</a>
+      </div>
+    </form:form>
+  </div>
+</div>
 </body>
 </html>

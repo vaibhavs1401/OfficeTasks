@@ -7,7 +7,7 @@ import org.springframework.web.servlet.view.JstlView;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.cdac.student.controller") // ONLY controllers here
+@ComponentScan(basePackages = "com.cdac.student.controller") 
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean

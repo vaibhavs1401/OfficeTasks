@@ -1,22 +1,29 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.cdac.student.entity;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
-/**
- *
- * @author hcdc
- */
-@Entity(name="users")
-public class Admin extends BaseEntity{
+@Entity
+@Table(name = "admins",
+       uniqueConstraints = @UniqueConstraint(name = "uk_admins_user", columnNames = "user_id"))
+public class Admin extends BaseEntity {
 
-    public Admin() {
+    @Column(length = 120)
+    private String displayName;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true,
+                foreignKey = @ForeignKey(name = "fk_admins_user"))
+    private UserAccount account;
+
+    public Admin() {}
+    public Admin(UserAccount account, String displayName) {
+        this.account = account;
+        this.displayName = displayName;
     }
 
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    
-
+    public UserAccount getAccount() { return account; }
+    public void setAccount(UserAccount account) { this.account = account; }
 }

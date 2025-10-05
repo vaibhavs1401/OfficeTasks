@@ -1,18 +1,19 @@
-// src/main/java/com/cdac/student/controller/StudentController.java
 package com.cdac.student.controller;
 
-import com.cdac.student.entity.BaseEntity.UserRole;
 import com.cdac.student.entity.Student;
+import com.cdac.student.entity.UserAccount;
 import com.cdac.student.service.StudentService;
 import jakarta.servlet.http.HttpServletRequest;
-import javax.crypto.SecretKey;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/student")
+@PreAuthorize("hasRole('STUDENT')") // all endpoints require STUDENT by default
 public class StudentController {
 
     private final StudentService studentService;
@@ -20,66 +21,52 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @GetMapping("/profile")
-    public String profile(HttpServletRequest req, Model model) {
-        var ses = req.getSession(false);
-        if (ses == null) return "redirect:/login";
-        Object role = ses.getAttribute("userRole");
-        if (role != UserRole.ROLE_STUDENT) return "redirect:/login";
-
-        String rollNo = (String) ses.getAttribute("userRollNo");
-        if (rollNo == null) return "redirect:/login";
-
-        Student s = studentService.getStudentByRollNo(rollNo);
-        if (s == null) return "redirect:/login";
-
-        model.addAttribute("student", s);
-        return "studentDetails"; // reuse your existing JSP
+    /** View my own profile (no session hacks)
+     * @param currentUser
+     * @param request
+     * @param model
+     * @return  */
+@GetMapping("/profile")
+public String profile(@AuthenticationPrincipal UserAccount currentUser,
+                      HttpServletRequest request,
+                      Model model) {
+    if (currentUser == null) {
+        currentUser = (UserAccount) (
+            request.getSession(false) != null
+                ? request.getSession(false).getAttribute("currentUser")
+                : null
+        );
     }
-    
-    
+    if (currentUser == null) {
+        return "redirect:/auth/login?error=Please+login";
+    }
+
+    var s = studentService.findByUserId(currentUser.getId());
+    if (s == null) return "redirect:/auth/login?error=No+student+profile";
+    model.addAttribute("student", s);
+    return "studentDetails";
+}
+
+
+    /** Show update form for my own profile
+     * @param currentUser
+     * @param model
+     * @return  */
     @GetMapping("/update")
-    public String showUpdateForm(@RequestParam("rollNo") String rollNo, Model model){ 
-        System.out.println(rollNo + "RollNo is here");
-        Student student = studentService.findByRollNo(rollNo);
-        model.addAttribute("student", student);
+    public String showUpdateForm(@AuthenticationPrincipal UserAccount currentUser, Model model) {
+        Student s = studentService.findByUserId(currentUser.getId());
+        model.addAttribute("student", s);
         return "updateStudent";
     }
-    
+
+    /** Persist my updates (server-side ensures current user owns the record) */
     @PostMapping("/update")
-    public String updateStudent(@ModelAttribute Student student){
-        studentService.updateStudent(student);
-        return "redirect:/admin/studentlist";
+    public String updateStudent(@AuthenticationPrincipal UserAccount currentUser,
+                                @ModelAttribute @Valid Student form) {
+        // Optional: enforce ownership in service layer as well
+        studentService.updateOwnProfile(currentUser.getId(), form);
+        return "redirect:/student/profile";
     }
-    
-    
-    @PostMapping("/delete")
-    public String deleteStudent(@RequestParam("rollNo") String rollNo){
-        studentService.deleteStudentByRollNo(rollNo);
-        return "redirect:/admin/studentlist";
-    }
-    
-    
-    @GetMapping("/add")
-    public String showAddForm(Model model){
-        model.addAttribute("student", new Student());
-        return "addStudent";
-    }
-    
-    
-    @PostMapping("/add")
-    public String addStudent(@ModelAttribute Student student){
-        studentService.addStudent(student);
-        return "redirect:/admin/studentlist";
-    }
-    
-    @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
-        SecretKey key = "923rbuihfcfoiu";
-        
-    }
-    
-    
-    
-            
 }
+
+

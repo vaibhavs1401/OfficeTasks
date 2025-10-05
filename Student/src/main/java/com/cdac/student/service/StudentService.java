@@ -1,20 +1,29 @@
-// src/main/java/com/cdac/student/service/StudentService.java
 package com.cdac.student.service;
 
 import com.cdac.student.entity.Student;
 import java.util.List;
 
 public interface StudentService {
-    String register(Student s);                         
-    Student authenticate(String email, String password); 
+
+    // ----- student self-service -----
+    Student findByUserId(Long userId);
+
+    void updateOwnProfile(Long userId, Student form);
+
+    // ----- shared reads (used by admin and controllers) -----
     Student getStudentByRollNo(String rollNo);
+
+    Student findByRollNo(String rollNo);
+
     List<Student> getAllStudents();
-    List<Student> getStudentClassWise(int std);
-    public Student findByRollNo(String rollNo);
-    public void updateStudent(Student student);
-    public void deleteStudentByRollNo(String rollNo);
 
-    public void addStudent(Student student);
+    List<Student> getStudentClassWise(int standard);
 
-    public List<Student> findStudentsByStd(int std);
+    List<Student> findStudentsByStd(int standard);
+
+    Student addStudent(Student student);
+
+    Student updateStudent(Student student);
+
+    void deleteStudentByRollNo(String rollNo);
 }

@@ -1,5 +1,6 @@
 package com.cdac.student.config;
 
+import com.cdac.student.security.jwt.JwtUtils;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.Properties;
 import javax.sql.DataSource;
@@ -15,8 +16,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = "com.cdac.student.service")
-@EnableJpaRepositories(basePackages = "com.cdac.student.dao") // your repositories
+@ComponentScan(basePackages = "com.cdac.student")
+@EnableJpaRepositories(basePackages = "com.cdac.student.dao") 
 public class DataConfig {
 
     @Bean
@@ -24,9 +25,9 @@ public class DataConfig {
         var ds = new DriverManagerDataSource();
         ds.setDriverClassName("org.mariadb.jdbc.Driver");
         // IMPORTANT: add auth/TLS flags if your server is MySQL-8 style auth
-        ds.setUrl("jdbc:mariadb://localhost:3306/user?allowPublicKeyRetrieval=true&useSSL=false");
+        ds.setUrl("jdbc:mariadb://localhost:3307/user?allowPublicKeyRetrieval=true&useSSL=false");
         ds.setUsername("root");
-        ds.setPassword("hcdc@2018");
+        ds.setPassword("manager");
         return ds;
     }
 
@@ -64,4 +65,7 @@ public class DataConfig {
         return new ModelMapper();
     }
    
+    @Bean
+    public JwtUtils jwtUtils() { return new JwtUtils(); }
+    
 }

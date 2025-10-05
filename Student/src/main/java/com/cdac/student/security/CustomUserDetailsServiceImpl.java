@@ -1,40 +1,28 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.cdac.student.security;
 
-import com.cdac.student.dao.StudentDao;
-import com.cdac.student.entity.Student;
-import lombok.AllArgsConstructor;
+import com.cdac.student.dao.UserAccountDao;
+import com.cdac.student.entity.UserAccount;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
-/**
- *
- * @author hcdc
- */
-
 @Service
-@Transactional
-@AllArgsConstructor
-public class CustomUserDetailsServiceImpl implements UserDetailsService{
-    
-    private final StudentDao studentDao;
+@Transactional(readOnly = true)
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        Optional<Student> userOpt = 
-//    }
+    private final UserAccountDao userAccountDao;
+
+    public CustomUserDetailsServiceImpl(UserAccountDao userAccountDao) {
+        this.userAccountDao = userAccountDao;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // username is email in our app
+        UserAccount user = userAccountDao.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return user; // UserAccount implements UserDetails
     }
-    
 }
