@@ -30,6 +30,7 @@ com\cdac\student\security\jwt\JwtUtils.class
 com\cdac\student\service\StudentService.class
 com\cdac\student\entity\BaseEntity.class
 com\cdac\student\service\RegistrationServiceImpl.class
+com\cdac\student\security\RequestDebugFilter.class
 com\cdac\student\controller\StudentController.class
 com\cdac\student\JakartaRestConfiguration.class
 com\cdac\student\dao\UserAccountDaoImpl.class

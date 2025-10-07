@@ -4,6 +4,7 @@ import com.cdac.student.security.jwt.CustomJWTFilter;
 import com.cdac.student.security.jwt.JwtAuthEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,9 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private final CustomJWTFilter jwtFilter;          // injected component
+    private final CustomJWTFilter jwtFilter;
     private final JwtAuthEntryPoint authEntryPoint;
-    private final UserDetailsService uds;             // interface
+    private final UserDetailsService uds;
 
     public SecurityConfiguration(CustomJWTFilter jwtFilter,
                                  JwtAuthEntryPoint authEntryPoint,
@@ -46,19 +47,47 @@ public class SecurityConfiguration {
         return new ProviderManager(provider);
     }
 
+    /**
+     * Chain 1: SECURED endpoints only. Matches /student/** and /admin/**
+     * Requires JWT + roles. Nothing else hits this chain.
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-           .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
-           .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-           .authorizeHttpRequests(auth -> auth
-               .requestMatchers("", "/", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
-               .requestMatchers("/admin/**").hasRole("ADMIN")
-               .requestMatchers("/student/**").hasRole("STUDENT")
-               .anyRequest().authenticated()
-           )
-           .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    @Order(1)
+    public SecurityFilterChain securedChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/student/**", "/admin/**")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/student/**").hasRole("STUDENT")
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    /**
+     * Chain 2: PUBLIC fallback. Everything else (including /Student root) is allowed.
+     * You can still whitelist static/auth paths explicitly if you want.
+     */
+    @Bean
+    @Order(2)
+    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/**") // catch-all for everything not matched above
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/", "/index", "/home", "/index.html", "/index.jsp",
+                    "/auth/**",
+                    "/css/**", "/js/**", "/images/**", "/includes/**",
+                    "/webjars/**", "/favicon.ico"
+                ).permitAll()
+                .anyRequest().permitAll()   // keep this as permitAll for fallback
+            );
         return http.build();
     }
 }
-

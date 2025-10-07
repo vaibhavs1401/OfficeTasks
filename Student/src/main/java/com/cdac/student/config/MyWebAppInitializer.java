@@ -1,7 +1,12 @@
 package com.cdac.student.config;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;   // jakarta, not javax
+import java.util.EnumSet;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -33,4 +38,16 @@ public class MyWebAppInitializer extends AbstractAnnotationConfigDispatcherServl
         enc.setForceEncoding(true);
         return new Filter[]{ enc };
     }
+    
+    
+      @Override
+  public void onStartup(ServletContext sc) throws ServletException {
+    super.onStartup(sc);
+    FilterRegistration.Dynamic f = sc.addFilter("requestDebugFilter",
+        new com.cdac.student.security.RequestDebugFilter());
+    f.addMappingForUrlPatterns(
+        EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.ERROR, DispatcherType.INCLUDE),
+        false,
+        "/*");
+  }
 }

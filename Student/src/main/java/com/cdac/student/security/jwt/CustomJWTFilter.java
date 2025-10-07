@@ -5,8 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,13 +17,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 @Component
 public class CustomJWTFilter extends OncePerRequestFilter {
 
-    private static final String JWT_COOKIE_NAME = "JWT";
+    private static final String AUTH_HEADER = "Authorization";
+    private static final String BEARER = "Bearer ";
+    private static final String JWT_COOKIE = "JWT";
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService uds;
@@ -31,73 +34,73 @@ public class CustomJWTFilter extends OncePerRequestFilter {
         this.uds = uds;
     }
 
-    // (Optional) don’t even try to parse JWT on public paths
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String p = request.getServletPath();
-        return p.equals("/") ||
-               p.equals("/index") || p.equals("/index.html") || p.equals("/index.jsp") ||
-               p.startsWith("/auth/") ||
-               p.startsWith("/css/") || p.startsWith("/js/") || p.startsWith("/images/") ||
-               p.startsWith("/webjars/");
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest req) {
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) return true;
+
+        String uri = req.getRequestURI();   // e.g. /Student
+        String ctx = req.getContextPath();  // e.g. /Student
+        if (uri.equals(ctx) || uri.equals(ctx + "/")) return true; // exact root
+
+        String sp = req.getServletPath();
+        if (!StringUtils.hasText(sp)) sp = "/"; // normalize
+
+        return sp.equals("/") || sp.equals("/index") || sp.equals("/home")
+            || sp.equals("/index.html") || sp.equals("/index.jsp")
+            || sp.startsWith("/auth/")
+            || sp.startsWith("/css/") || sp.startsWith("/js/") || sp.startsWith("/images/")
+            || sp.startsWith("/includes/") || sp.startsWith("/webjars/")
+            || sp.equals("/favicon.ico");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain) throws ServletException, IOException {
         try {
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 String token = resolveToken(request);
-
                 if (StringUtils.hasText(token) && jwtUtils.validate(token)) {
                     String username = jwtUtils.extractUsername(token);
+                    UserDetails user = uds.loadUserByUsername(username);
 
-                    // ⚠️ This can throw UsernameNotFoundException (AuthenticationException)
-                    UserDetails userDetails = uds.loadUserByUsername(username);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(
+                            user, null, user.getAuthorities());
+                    ((UsernamePasswordAuthenticationToken) auth)
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    var auth = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(auth);
-                    SecurityContextHolder.setContext(context);
+                    SecurityContext ctx = SecurityContextHolder.createEmptyContext();
+                    ctx.setAuthentication(auth);
+                    SecurityContextHolder.setContext(ctx);
                 }
             }
             chain.doFilter(request, response);
-        } catch (org.springframework.security.core.AuthenticationException ex) {
-            // Token is valid but user is gone/disabled → treat as anonymous, optionally clear cookie
+        } catch (AuthenticationException ex) {
             clearJwtCookie(response);
-            // Continue as unauthenticated instead of triggering the entry point
+            SecurityContextHolder.clearContext();
+            chain.doFilter(request, response);
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
             chain.doFilter(request, response);
         }
     }
 
     private String resolveToken(HttpServletRequest request) {
-        String bearer = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
-        }
+        String h = request.getHeader(AUTH_HEADER);
+        if (StringUtils.hasText(h) && h.startsWith(BEARER)) return h.substring(BEARER.length());
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
-            for (Cookie c : cookies) {
-                if (JWT_COOKIE_NAME.equals(c.getName()) && StringUtils.hasText(c.getValue())) {
-                    return c.getValue();
-                }
-            }
+            for (Cookie c : cookies) if (JWT_COOKIE.equals(c.getName()) && StringUtils.hasText(c.getValue())) return c.getValue();
         }
         return null;
     }
 
     private void clearJwtCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(JWT_COOKIE_NAME, "");
+        Cookie cookie = new Cookie(JWT_COOKIE, "");
         cookie.setPath("/");
-        cookie.setMaxAge(0);
         cookie.setHttpOnly(true);
-        // add SameSite attr if you were using it when setting the cookie
+        cookie.setMaxAge(0);
         response.addCookie(cookie);
         response.addHeader("Set-Cookie", "JWT=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax");
     }
 }
-
