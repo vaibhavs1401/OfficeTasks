@@ -76,12 +76,14 @@ public class StudentDaoImpl implements StudentDao {
     
     @Override
     public List<Student> findByName(String name) {
-        return em.createQuery("SELECT s FROM Student s WHERE s.name = :name ORDEER BY s.name ASC", Student.class).
-                setParameter("name", name)
-                .getResultList();
+        return em.createQuery(
+                "SELECT s FROM Student s " +
+                "WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')) " +
+                "ORDER BY s.name ASC", 
+                Student.class)
+            .setParameter("name", name == null ? "" : name.trim())
+            .getResultList();
     }
-    
-    
-    
+     
     
 }

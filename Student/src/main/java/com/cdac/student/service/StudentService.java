@@ -26,4 +26,6 @@ public interface StudentService {
     Student updateStudent(Student student);
 
     void deleteStudentByRollNo(String rollNo);
+    
+    public List<Student> findByName(String name);
 }

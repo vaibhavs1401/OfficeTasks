@@ -1,0 +1,2 @@
+Caused by: java.sql.SQLException: GSS-API authentication exception-
+Wrong Password or username of database

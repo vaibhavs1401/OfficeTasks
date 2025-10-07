@@ -170,11 +170,13 @@ public class AdminController {
     
     
     @GetMapping("/search")
-    public String getStudentsByClass(@RequestParam("name") String name, Model model) {
-        List<Student> students = studentService.findByName(name);
-        model.addAttribute("students", students);
-        model.addAttribute("name", name);
-        return "studentsByClass";
+    public String showSearchPage(@RequestParam(value = "name", required = false) String name, Model model) {
+        if (name != null && !name.isBlank()) {
+            List<Student> students = studentService.findByName(name);
+            model.addAttribute("students", students);
+        }
+        model.addAttribute("name", name == null ? "" : name);
+        return "searchStudent";
     }
     
 }
