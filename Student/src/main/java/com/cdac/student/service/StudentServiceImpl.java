@@ -143,4 +143,12 @@ public class StudentServiceImpl implements StudentService {
             .orElseThrow(() -> new IllegalArgumentException("Student not found: " + rollNo));
         students.delete(s);
     }
+
+    @Override
+    public List<Student> findByName(String name) {
+        List<Student> s = students.findByName(name);
+        return s;
+    }
+    
+    
 }

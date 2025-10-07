@@ -26,4 +26,7 @@ public interface StudentDao {
     Student save(Student student);
 
     void delete(Student student);
+
+    public List<Student> findByName(String name);
+    
 }

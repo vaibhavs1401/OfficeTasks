@@ -72,4 +72,16 @@ public class StudentDaoImpl implements StudentDao {
         var managed = em.contains(student) ? student : em.merge(student);
         em.remove(managed);
     }
+
+    
+    @Override
+    public List<Student> findByName(String name) {
+        return em.createQuery("SELECT s FROM Student s WHERE s.name = :name ORDEER BY s.name ASC", Student.class).
+                setParameter("name", name)
+                .getResultList();
+    }
+    
+    
+    
+    
 }

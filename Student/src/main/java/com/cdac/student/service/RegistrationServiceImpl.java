@@ -69,6 +69,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         return ua.getId();
     }
+    
 }
 
 

@@ -1,5 +1,6 @@
 package com.cdac.student.dao;
 
+import com.cdac.student.entity.Admin;
 import com.cdac.student.entity.Student;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -56,6 +57,15 @@ public class AdminDaoImpl implements AdminDao {
         Student s = getStudentByRollNo(rollNo);
         if (s != null) {
             em.remove(em.contains(s) ? s : em.merge(s));
+        }
+    }
+
+    @Override
+    public void saveOrUpdate(Admin admin) {
+        if (admin.getId() == null) {
+            em.persist(admin);
+        } else {
+            em.merge(admin);
         }
     }
 }

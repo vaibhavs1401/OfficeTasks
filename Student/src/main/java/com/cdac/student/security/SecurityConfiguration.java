@@ -48,8 +48,11 @@ public class SecurityConfiguration {
     }
 
     /**
-     * Chain 1: SECURED endpoints only. Matches /student/** and /admin/**
-     * Requires JWT + roles. Nothing else hits this chain.
+     * Chain 1: SECURED endpoints only.Matches /student/** and /admin/**
+ Requires JWT + roles.Nothing else hits this chain.
+     * @param http
+     * @return 
+     * @throws java.lang.Exception
      */
     @Bean
     @Order(1)
@@ -86,7 +89,7 @@ public class SecurityConfiguration {
                     "/css/**", "/js/**", "/images/**", "/includes/**",
                     "/webjars/**", "/favicon.ico"
                 ).permitAll()
-                .anyRequest().permitAll()   // keep this as permitAll for fallback
+                .anyRequest().permitAll()   
             );
         return http.build();
     }

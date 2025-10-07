@@ -11,6 +11,10 @@ public class Role extends BaseEntity {
     @Column(nullable = false, length = 50)
     private RoleName name;
 
+    public boolean isEmpty() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
     public enum RoleName { ROLE_ADMIN, ROLE_STUDENT, ROLE_TEACHER }
 
     public Role() {}

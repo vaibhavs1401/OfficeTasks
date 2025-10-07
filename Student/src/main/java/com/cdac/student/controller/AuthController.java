@@ -19,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Controller
@@ -32,10 +33,10 @@ public class AuthController {
     private final RegistrationService registrationService; // ✅ inject it
 
     public AuthController(StudentService studentService,
-                          AuthenticationManager authManager,
-                          PasswordEncoder encoder,
-                          JwtUtils jwtUtils,
-                          RegistrationService registrationService) {
+            AuthenticationManager authManager,
+            PasswordEncoder encoder,
+            JwtUtils jwtUtils,
+            RegistrationService registrationService) {
         this.studentService = studentService;
         this.authManager = authManager;
         this.encoder = encoder;
@@ -44,102 +45,104 @@ public class AuthController {
     }
 
     // ---------- Views (JSP) ----------
-
     @GetMapping("/login")
-    public String loginPage() { return "login"; }
-
-    /**
-     * Form login (JSP).On success: issues JWT cookie, then redirects
- based on role.
-     * @param email
-     * @param password
-     * @param response
-     * @param model
-     * @return 
-     */
-@PostMapping("/login")
-public String doFormLogin(@RequestParam("email") String email,
-                          @RequestParam("password") String password,
-                          HttpServletRequest request,
-                          HttpServletResponse response,
-                          Model model) {
-    try {
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-        );
-
-        // Make the auth visible to the rest of the request pipeline
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        // principal is your UserAccount (implements UserDetails)
-        UserAccount principal = (UserAccount) auth.getPrincipal();
-
-        // (Only if other code expects it) put the user in session
-        request.getSession(true).setAttribute("currentUser", principal);
-
-        // Issue JWT (once)
-        String jwt = jwtUtils.generateToken(principal); // or use username/id/roles if your util expects that
-        addJwtCookie(response, jwt, Duration.ofHours(1));
-
-        // Check role from authorities (don't cast Authentication to UserAccount)
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-
-        return isAdmin ? "redirect:/admin/studentlist" : "redirect:/student/profile";
-
-    } catch (BadCredentialsException ex) {
-        model.addAttribute("error", "Invalid email or password");
+    public String loginPage() {
         return "login";
     }
-}
-
-
-    @GetMapping("/register")
-    public String registerPage() { return "register"; }
 
     /**
-     * Form registration (JSP).Delegates to RegistrationService to:
-  - create UserAccount (BCrypt)
-  - assign ROLE_STUDENT
-  - create linked Student
+     * Form login (JSP).On success: issues JWT cookie, then redirects based on
+     * role.
+     *
      * @param email
      * @param password
-     * @return 
+     * @param request
+     * @param response
+     * @param model
+     * @return
+     */
+    @PostMapping("/login")
+    public String doFormLogin(@RequestParam("email") String email,
+            @RequestParam("password") String password,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Model model) {
+        try {
+            Authentication auth = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+
+            // Make the auth visible to the rest of the request pipeline
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // principal is your UserAccount (implements UserDetails)
+            UserAccount principal = (UserAccount) auth.getPrincipal();
+
+            // (Only if other code expects it) put the user in session
+            request.getSession(true).setAttribute("currentUser", principal);
+
+            // Issue JWT (once)
+            String jwt = jwtUtils.generateToken(principal); // or use username/id/roles if your util expects that
+            addJwtCookie(response, jwt, Duration.ofHours(1));
+            // Check role from authorities (don't cast Authentication to UserAccount)
+            boolean isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+            return isAdmin ? "redirect:/admin/studentlist" : "redirect:/student/profile";
+
+        } catch (BadCredentialsException ex) {
+            model.addAttribute("error", "Invalid email or password");
+            return "login";
+        }
+    }
+
+    @GetMapping("/register")
+    public String registerPage() {
+        return "register";
+    }
+
+    /**
+     * Form registration (JSP).Delegates to RegistrationService to: - create
+     * UserAccount (BCrypt) - assign ROLE_STUDENT - create linked Student
+     *
+     * @param email
+     * @param password
+     * @return
      */
     @PostMapping("/register")
     public String registerStudent(@RequestParam("email") String email,
-                              @RequestParam("password") String password,
-                              @RequestParam("name") String name,
-                              @RequestParam(value = "standard", required = false) Integer standard,
-                              @RequestParam(value = "std", required = false) Integer std,   // ← accept both
-                              @RequestParam(value = "age", required = false) Integer age,
-                              @RequestParam(value = "rollNo", required = false) String rollNo,
-                              Model model) {
-    try {
-        Integer finalStd = (standard != null) ? standard : std;
-        var req = new RegistrationService.RegisterRequest(
-            email, password, name, finalStd, age, rollNo
-        );
-        registrationService.registerStudent(req);
-        return "redirect:/auth/login?registered";
-    } catch (IllegalArgumentException e) {
-        model.addAttribute("error", e.getMessage());
-        return "register";
-    } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-        // e.g., unique constraint on email or roll_no
-        model.addAttribute("error", "Duplicate email or roll number.");
-        return "register";
-    } catch (Exception e) {
-        model.addAttribute("error", "Registration failed");
-        return "register";
+            @RequestParam("password") String password,
+            @RequestParam("name") String name,
+            @RequestParam(value = "standard", required = false) Integer standard,
+            @RequestParam(value = "std", required = false) Integer std, // ← accept both
+            @RequestParam(value = "age", required = false) Integer age,
+            @RequestParam(value = "rollNo", required = false) String rollNo,
+            Model model) {
+        try {
+            Integer finalStd = (standard != null) ? standard : std;
+            var req = new RegistrationService.RegisterRequest(
+                    email, password, name, finalStd, age, rollNo
+            );
+            registrationService.registerStudent(req);
+            return "redirect:/auth/login?registered";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "register";
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // e.g., unique constraint on email or roll_no
+            model.addAttribute("error", "Duplicate email or roll number.");
+            return "register";
+        } catch (Exception e) {
+            model.addAttribute("error", "Registration failed");
+            return "register";
+        }
     }
-}
-
 
     /**
      * Clear the JWT cookie (stateless logout).
+     *
      * @param response
-     * @return 
+     * @return
      */
     @PostMapping("/logout")
     public String logout(HttpServletResponse response) {
@@ -148,9 +151,13 @@ public String doFormLogin(@RequestParam("email") String email,
     }
 
     // ---------- API (JSON) ----------
+    public record LoginRequest(@NotBlank String email, @NotBlank String password) {
 
-    public record LoginRequest(@NotBlank String email, @NotBlank String password) {}
-    public record LoginResponse(String token, String role, String redirect) {}
+    }
+
+    public record LoginResponse(String token, String role, String redirect) {
+
+    }
 
     @PostMapping(value = "/api/login", consumes = "application/json", produces = "application/json")
     @ResponseBody
@@ -169,7 +176,6 @@ public String doFormLogin(@RequestParam("email") String email,
     }
 
     // ---------- Helpers ----------
-
     private void addJwtCookie(HttpServletResponse response, String token, Duration ttl) {
         Cookie cookie = new Cookie("JWT", token);
         cookie.setHttpOnly(true);
@@ -178,7 +184,9 @@ public String doFormLogin(@RequestParam("email") String email,
         cookie.setMaxAge((int) ttl.getSeconds());
         // SameSite attr via header (for broad container support)
         String attrs = "JWT=" + token + "; Max-Age=" + cookie.getMaxAge() + "; Path=/; HttpOnly; SameSite=Lax";
-        if (cookie.getSecure()) attrs += "; Secure";
+        if (cookie.getSecure()) {
+            attrs += "; Secure";
+        }
         response.addHeader("Set-Cookie", attrs);
         response.addCookie(cookie);
     }
@@ -189,7 +197,9 @@ public String doFormLogin(@RequestParam("email") String email,
 
     private boolean hasRole(UserAccount principal, String roleName) {
         for (GrantedAuthority ga : principal.getAuthorities()) {
-            if (roleName.equals(ga.getAuthority())) return true;
+            if (roleName.equals(ga.getAuthority())) {
+                return true;
+            }
         }
         return false;
     }
@@ -198,6 +208,5 @@ public String doFormLogin(@RequestParam("email") String email,
         return principal.getAuthorities().stream()
                 .findFirst().map(GrantedAuthority::getAuthority).orElse("ROLE_STUDENT");
     }
-    
-    
+
 }

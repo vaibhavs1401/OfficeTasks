@@ -27,3 +27,4 @@ public class Admin extends BaseEntity {
     public UserAccount getAccount() { return account; }
     public void setAccount(UserAccount account) { this.account = account; }
 }
+

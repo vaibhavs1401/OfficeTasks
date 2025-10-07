@@ -25,9 +25,9 @@ public class DataConfig {
         var ds = new DriverManagerDataSource();
         ds.setDriverClassName("org.mariadb.jdbc.Driver");
         // IMPORTANT: add auth/TLS flags if your server is MySQL-8 style auth
-        ds.setUrl("jdbc:mariadb://localhost:3307/user?allowPublicKeyRetrieval=true&useSSL=false");
+        ds.setUrl("jdbc:mariadb://localhost:3306/user?allowPublicKeyRetrieval=true&useSSL=false");
         ds.setUsername("root");
-        ds.setPassword("manager");
+        ds.setPassword("hcdc@2018");
         return ds;
     }
 

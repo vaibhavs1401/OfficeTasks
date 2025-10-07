@@ -2,13 +2,17 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="includes/header.jsp" />
 <!DOCTYPE html>
-<html>
-<head><title>Students in Class ${classStd}</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Students in Class ${classStd}</title>
+  <link rel="stylesheet" href="<c:url value='/css/studentList.css' />" />
+</head>
 <body>
-  <div class="card">
-    <h2>Students in Class ${classStd}</h2>
+  <main class="main-content container">
+    <h2 class="page-title">Students in Class ${classStd}</h2>
 
-    <table>
+    <table class="student-table">
       <thead>
         <tr>
           <th>Roll No</th>
@@ -24,17 +28,18 @@
             <td>${student.name}</td>
             <td>${student.age}</td>
             <td>
-              <a class="btn ghost" href="<c:url value='/admin/student'><c:param name='rollNo' value='${student.rollNo}'/></c:url>">View</a>
+              <a class="btn btn-ghost" href="<c:url value='/admin/student'><c:param name='rollNo' value='${student.rollNo}'/></c:url>">View</a>
             </td>
           </tr>
         </c:forEach>
       </tbody>
     </table>
 
-    <div class="actions" style="margin-top:12px;">
-      <a class="btn ghost" href="<c:url value='/admin/studentlist'/>">Back to Student List</a>
+    <div class="actions" style="margin-top: 20px;">
+      <a class="btn btn-ghost" href="<c:url value='/admin/studentlist'/>">Back to Full Student List</a>
     </div>
-  </div>
-</div>
+  </main>
 </body>
 </html>
+
+
