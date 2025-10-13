@@ -23,7 +23,7 @@
             <label class="sr-only" for="name">Name</label>
             <div class="input-row">
                 <input id="name" name="name" type="text" class="input"
-                       placeholder="Type a name, e.g., 'Sourav'"
+                       placeholder="Type a name, e.g., 'Alice'"
                        value="${fn:escapeXml(name)}" />
                 <button type="submit" class="btn">Search</button>
             </div>

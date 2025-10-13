@@ -12,12 +12,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import com.cdac.student.security.CustomUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Component
 public class CustomJWTFilter extends OncePerRequestFilter {
@@ -62,15 +63,16 @@ public class CustomJWTFilter extends OncePerRequestFilter {
                 String token = resolveToken(request);
                 if (StringUtils.hasText(token) && jwtUtils.validate(token)) {
                     String username = jwtUtils.extractUsername(token);
-                    UserDetails user = uds.loadUserByUsername(username);
-
+                    System.out.println(username);
+                    UserDetails userDetails = uds.loadUserByUsername(username);
+                    System.out.println(userDetails.toString());
                     Authentication auth = new UsernamePasswordAuthenticationToken(
-                            user, null, user.getAuthorities());
+                            userDetails, null, userDetails.getAuthorities());
                     ((UsernamePasswordAuthenticationToken) auth)
                             .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                     SecurityContext ctx = SecurityContextHolder.createEmptyContext();
                     ctx.setAuthentication(auth);
+                    System.out.println(auth.toString());
                     SecurityContextHolder.setContext(ctx);
                 }
             }
@@ -104,3 +106,5 @@ public class CustomJWTFilter extends OncePerRequestFilter {
         response.addHeader("Set-Cookie", "JWT=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax");
     }
 }
+
+

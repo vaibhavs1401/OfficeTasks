@@ -9,6 +9,8 @@
       <a href="<c:url value='/'/>" class="nav-link">Home</a>
       <a href="<c:url value='/admin/studentlist'/>" class="nav-link">All Students</a>
       <a href="<c:url value='/student/profile'/>" class="nav-link">My Profile</a>
+      <a href="<c:url value='/admin/files-list'/>" class="nav-link">Files</a>
+      <a href="<c:url value='/admin/pending-files'/>" class="nav-link">Pending Files</a>
     </div>
 
     <div class="auth-section">

@@ -36,7 +36,7 @@ public class UserAccount extends BaseEntity implements UserDetails {
     private boolean credentialsNonExpired = true;
 
     // Many-to-many roles
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_roles_user")),
@@ -47,9 +47,14 @@ public class UserAccount extends BaseEntity implements UserDetails {
 
     // ----- domain links (optional) -----
     // If each student has exactly one login:
-    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "account", fetch = FetchType.EAGER)
     private Student student;
 
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileMetaData> uploadedFiles;
+    
+    
     public UserAccount() {}
     public UserAccount(String email, String password) {
         this.email = email;

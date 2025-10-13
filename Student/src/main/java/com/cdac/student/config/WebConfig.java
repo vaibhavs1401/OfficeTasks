@@ -1,13 +1,15 @@
 package com.cdac.student.config;
 
 import org.springframework.context.annotation.*;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.cdac.student.controller") 
+@ComponentScan(basePackages = "com.cdac.student.controller")
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean
@@ -22,8 +24,23 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry reg) {
         reg.addResourceHandler("/css/**")
-            .addResourceLocations("/css/");
+                .addResourceLocations("/css/");
         reg.addResourceHandler("/js/**")
-           .addResourceLocations("/js/**");
+                .addResourceLocations("/js/**");
     }
+
+    @Bean
+    public MultipartResolver multipartresolver() {
+        StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
+        return resolver;
+    }
+
+    @Bean
+    public StandardServletMultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
+    }
+    
+    
+    
+
 }

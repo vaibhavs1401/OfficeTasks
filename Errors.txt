@@ -1,2 +1,6 @@
 Caused by: java.sql.SQLException: GSS-API authentication exception-
 Wrong Password or username of database
+
+
+SEVERE:   Exception while preparing the app : Exception [EclipseLink-28018] (Eclipse Persistence Services - 4.0.1.payara-p4.v202504221851): org.eclipse.persistence.exceptions.EntityManagerSetupException
+Entity does not have a @Id primary key

@@ -25,31 +25,31 @@ public class SecurityConfiguration {
 
     private final CustomJWTFilter jwtFilter;
     private final JwtAuthEntryPoint authEntryPoint;
-    private final UserDetailsService uds;
+    private final UserDetailsService customUserDetailsService;
 
     public SecurityConfiguration(CustomJWTFilter jwtFilter,
                                  JwtAuthEntryPoint authEntryPoint,
-                                 UserDetailsService uds) {
+                                 UserDetailsService customUserDetailsService) {
         this.jwtFilter = jwtFilter;
         this.authEntryPoint = authEntryPoint;
-        this.uds = uds;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() { 
+        return new BCryptPasswordEncoder(); 
+    }
 
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService uds,
-                                                       PasswordEncoder encoder) {
-        var provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(uds);
+    public AuthenticationManager authenticationManager(PasswordEncoder encoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);  // your custom service here
         provider.setPasswordEncoder(encoder);
         return new ProviderManager(provider);
     }
 
     /**
-     * Chain 1: SECURED endpoints only.Matches /student/** and /admin/**
- Requires JWT + roles.Nothing else hits this chain.
+     * Security chain for protected endpoints requiring JWT + roles
      * @param http
      * @return 
      * @throws java.lang.Exception
@@ -72,14 +72,16 @@ public class SecurityConfiguration {
     }
 
     /**
-     * Chain 2: PUBLIC fallback. Everything else (including /Student root) is allowed.
-     * You can still whitelist static/auth paths explicitly if you want.
+     * Public endpoints and fallback security chain
+     * @param http
+     * @return 
+     * @throws java.lang.Exception 
      */
     @Bean
     @Order(2)
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/**") // catch-all for everything not matched above
+            .securityMatcher("/**")
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -89,7 +91,7 @@ public class SecurityConfiguration {
                     "/css/**", "/js/**", "/images/**", "/includes/**",
                     "/webjars/**", "/favicon.ico"
                 ).permitAll()
-                .anyRequest().permitAll()   
+                .anyRequest().permitAll()
             );
         return http.build();
     }

@@ -25,7 +25,7 @@ public class Student extends BaseEntity {
     private String rollNo;
 
     // One student ↔ one user account (optional; keep if students log in)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id",
                 nullable = false,
                 unique = true,

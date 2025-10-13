@@ -1,17 +1,20 @@
 package com.cdac.student.controller;
 
+import com.cdac.student.dao.FileMetaDataDao;
 import com.cdac.student.dao.RoleDao;
+import com.cdac.student.entity.FileMetaData;
 import com.cdac.student.entity.Role;
 import com.cdac.student.entity.Student;
 import com.cdac.student.entity.UserAccount;
 import com.cdac.student.service.StudentService;
 import com.cdac.student.service.UserAccountService;
+import java.time.LocalDateTime;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin")
@@ -21,15 +24,23 @@ public class AdminController {
     private final StudentService studentService;
     private final UserAccountService userAccountService;
     private final RoleDao roleDao;
+    private final FileMetaDataDao fileMetaDataDao;
 
-    public AdminController(StudentService studentService, UserAccountService userAccountService, RoleDao roleDao) {
+    private static final int PAGE_SIZE = 10;
+
+    public AdminController(StudentService studentService, UserAccountService userAccountService, RoleDao roleDao, FileMetaDataDao fileMetaDataDao) {
         this.studentService = studentService;
         this.userAccountService = userAccountService;
         this.roleDao = roleDao;
+        this.fileMetaDataDao = fileMetaDataDao;
     }
 
     /**
      * Get student by roll number
+     *
+     * @param rollNo
+     * @param model
+     * @return
      */
     @GetMapping("/student")
     public String getStudentDetails(@RequestParam("rollNo") String rollNo, Model model) {
@@ -167,8 +178,7 @@ public class AdminController {
             return "addStudentWithAccount";
         }
     }
-    
-    
+
     @GetMapping("/search")
     public String showSearchPage(@RequestParam(value = "name", required = false) String name, Model model) {
         if (name != null && !name.isBlank()) {
@@ -178,5 +188,58 @@ public class AdminController {
         model.addAttribute("name", name == null ? "" : name);
         return "searchStudent";
     }
-    
+
+    @GetMapping("/pending")
+    public String viewPendingFiles(Model model) {
+        List<FileMetaData> pendingFiles = fileMetaDataDao.findByStatus(FileMetaData.FileStatus.PENDING);
+        model.addAttribute("files", pendingFiles);
+        return "pending-files";
+    }
+
+    @GetMapping
+    public String listFiles(
+            @RequestParam(value = "status", required = false) FileMetaData.FileStatus status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            Model model) {
+
+        List<FileMetaData> files;
+        long totalFiles;
+
+        if (status != null) {
+            files = fileMetaDataDao.findByStatusPaged(status, page, PAGE_SIZE);
+            totalFiles = fileMetaDataDao.countByStatus(status);
+            model.addAttribute("statusFilter", status.name());
+        } else {
+            files = fileMetaDataDao.findAllPaged(page, PAGE_SIZE);
+            totalFiles = fileMetaDataDao.countAll();
+            model.addAttribute("statusFilter", "ALL");
+        }
+
+        int totalPages = (int) Math.ceil((double) totalFiles / PAGE_SIZE);
+
+        model.addAttribute("files", files);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+
+        return "files-list";
+    }
+
+    @PostMapping("/approve/{id}")
+    public String approveFile(@PathVariable Long id,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
+        fileMetaDataDao.updateStatus(id, FileMetaData.FileStatus.APPROVED, LocalDateTime.now());
+        redirectAttributes.addFlashAttribute("success", "File approved successfully.");
+        return "redirect:/admin/files?page=" + page;
+    }
+
+    @PostMapping("/reject/{id}")
+    public String rejectFile(@PathVariable Long id,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
+        fileMetaDataDao.updateStatus(id, FileMetaData.FileStatus.REJECTED, null);
+        redirectAttributes.addFlashAttribute("error", "File rejected.");
+        return "redirect:/admin/files?page=" + page;
+    }
+
 }
