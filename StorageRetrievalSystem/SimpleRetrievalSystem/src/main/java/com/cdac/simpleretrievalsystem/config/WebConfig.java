@@ -41,5 +41,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("/js/**");
     }
     
+    
 }
 
