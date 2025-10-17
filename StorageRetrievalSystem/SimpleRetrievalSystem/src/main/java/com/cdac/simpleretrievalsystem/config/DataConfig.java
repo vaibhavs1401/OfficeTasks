@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @PropertySource("classpath:application.properties")
+@EnableJpaRepositories(basePackages = "com.cdac.simpleretrievalsystem.repository")
 public class DataConfig {
 
     private Environment env;
@@ -70,8 +72,7 @@ public class DataConfig {
         props.put("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect"));
         props.put("hibernate.show_sql", env.getProperty("spring.jpa.show-sql"));
         props.put("hibernate.format_sql", true);         
-        props.put("hibernate.use_sql_comments", true); 
-
+        props.put("hibernate.use_sql_comments", true);  
         return props;
     }
 
